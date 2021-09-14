@@ -1,24 +1,28 @@
 #!/usr/bin/env python3
 import RPi.GPIO as GPIO
-import GPIO.motor
-import GPIO.led as LED
+import moduleGPIO.motor as motor
+import moduleGPIO.led as LED
 
 import sys
 import time
 import signal
 
 Current_Lim = 4.0
-Motor: GPIO.motor.Motor
-LED: LED.LEDs
+Motor: motor.Motor
+Led: LED.LEDs
 
 # プログラム開始時の処理
 def setup():
+    global Motor
     print("!!!Set up!!!")
-    Motor = GPIO.motor.Motor(27, 26)
-    LED = GPIO.led.LEDs(21, 20, 19, 18)
+    GPIO.setmode(GPIO.BCM)
+    GPIO.setwarnings(False)
+    Motor = motor.Motor(27, 26, 12, 13)
+    Led = LED.LEDs(21, 20, 19, 18)
 
 # プログラム終了時の処理
 def cleanup():
+    global Motor
     print("!!!Clean up!!!")
     # Cleanup処理いろいろ
 
@@ -31,6 +35,7 @@ def sig_handler(signum, frame) -> None:
     sys.exit(1)
 
 def Motor_monitor():
+    global Motor
     current = Motor.GetCurrent()
     # モーター電流値監視
     if (current >= Current_Lim):
@@ -55,7 +60,7 @@ def main():
             # モーター状態確認
             Motor_monitor()
             # 10ms sleep
-            time.sleep(0.01)
+            time.sleep(1)
 
     finally:
         signal.signal(signal.SIGTERM, signal.SIG_IGN)
